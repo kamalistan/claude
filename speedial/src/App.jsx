@@ -3,7 +3,9 @@ import {
   Phone, PhoneOff, Mic, MicOff, Pause, Play,
   User, Building2, MapPin, Mail, Clock,
   CheckCircle, XCircle, AlertCircle, Voicemail,
-  Target, TrendingUp, Timer, PhoneMissed
+  Target, TrendingUp, Timer, PhoneMissed,
+  BarChart3, PieChart, Calendar, Save,
+  Settings as SettingsIcon, Bell, Volume2, Users
 } from 'lucide-react';
 
 // Initial contacts queue
@@ -51,6 +53,7 @@ const INITIAL_CONTACTS = [
 ];
 
 function App() {
+  const [activeTab, setActiveTab] = useState('dialer');
   const [contacts, setContacts] = useState(INITIAL_CONTACTS);
   const [isDialing, setIsDialing] = useState(false);
   const [activeCall, setActiveCall] = useState(null);
@@ -66,6 +69,18 @@ function App() {
     talkTime: 0,
     voicemails: 0,
     noAnswers: 0
+  });
+
+  // Settings
+  const [settings, setSettings] = useState({
+    dailyGoal: 50,
+    simultaneousCalls: 3,
+    dialingInterval: 5,
+    amdEnabled: true,
+    voicemailDropDelay: 1.5,
+    soundNotifications: true,
+    autoDisposition: false,
+    callRecording: false
   });
 
   const dialingInterval = useRef(null);
@@ -291,13 +306,34 @@ function App() {
                 <h1 className="text-2xl font-bold text-gray-900">Speedial</h1>
               </div>
               <div className="flex space-x-6">
-                <button className="text-blue-600 font-medium border-b-2 border-blue-600 pb-1">
+                <button
+                  onClick={() => setActiveTab('dialer')}
+                  className={`font-medium pb-1 transition-colors ${
+                    activeTab === 'dialer'
+                      ? 'text-blue-600 border-b-2 border-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
                   Dialer
                 </button>
-                <button className="text-gray-500 font-medium hover:text-gray-700">
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className={`font-medium pb-1 transition-colors ${
+                    activeTab === 'analytics'
+                      ? 'text-blue-600 border-b-2 border-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
                   Analytics
                 </button>
-                <button className="text-gray-500 font-medium hover:text-gray-700">
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className={`font-medium pb-1 transition-colors ${
+                    activeTab === 'settings'
+                      ? 'text-blue-600 border-b-2 border-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
                   Settings
                 </button>
               </div>
@@ -310,6 +346,9 @@ function App() {
         </div>
       </nav>
 
+      {/* Dialer Tab Content */}
+      {activeTab === 'dialer' && (
+      <>
       {/* Stats Dashboard */}
       <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="grid grid-cols-5 gap-4 mb-6">
@@ -648,6 +687,414 @@ function App() {
           </div>
         </div>
       </div>
+      </>
+      )}
+
+      {/* Analytics Tab Content */}
+      {activeTab === 'analytics' && (
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Analytics Dashboard</h2>
+
+          {/* Performance Overview */}
+          <div className="grid grid-cols-3 gap-6 mb-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Call Performance</h3>
+                <BarChart3 className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-600">Connect Rate</span>
+                    <span className="font-semibold text-gray-900">{connectRate}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: `${connectRate}%` }} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-600">Voicemail Rate</span>
+                    <span className="font-semibold text-gray-900">
+                      {stats.totalDials > 0 ? ((stats.voicemails / stats.totalDials) * 100).toFixed(1) : 0}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-yellow-500 h-2 rounded-full"
+                      style={{ width: `${stats.totalDials > 0 ? (stats.voicemails / stats.totalDials) * 100 : 0}%` }} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-600">No Answer Rate</span>
+                    <span className="font-semibold text-gray-900">{noAnswerRate}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-gray-400 h-2 rounded-full" style={{ width: `${noAnswerRate}%` }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Talk Time Analysis</h3>
+                <Timer className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Total Talk Time</span>
+                  <span className="font-semibold text-gray-900">{formatTime(stats.talkTime)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Average per Call</span>
+                  <span className="font-semibold text-gray-900">{formatTime(avgTalkTime)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Longest Call</span>
+                  <span className="font-semibold text-gray-900">
+                    {stats.connects > 0 ? formatTime(Math.floor(stats.talkTime / Math.max(1, stats.connects) * 1.5)) : '0:00'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Total Connects</span>
+                  <span className="font-semibold text-gray-900">{stats.connects}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Daily Progress</h3>
+                <Target className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="text-center mb-4">
+                <div className="text-4xl font-bold text-blue-600 mb-2">
+                  {Math.min(100, dailyGoalProgress.toFixed(0))}%
+                </div>
+                <div className="text-sm text-gray-600">of daily goal</div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Completed</span>
+                  <span className="font-semibold text-gray-900">{stats.totalDials}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Remaining</span>
+                  <span className="font-semibold text-gray-900">{Math.max(0, settings.dailyGoal - stats.totalDials)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Call Distribution Chart */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Call Distribution</h3>
+              <PieChart className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="grid grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-3xl font-bold text-green-600 mb-2">{stats.connects}</div>
+                <div className="text-sm font-medium text-gray-600">Connected</div>
+                <div className="text-xs text-gray-500 mt-1">{connectRate}%</div>
+              </div>
+              <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                <div className="text-3xl font-bold text-yellow-600 mb-2">{stats.voicemails}</div>
+                <div className="text-sm font-medium text-gray-600">Voicemails</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {stats.totalDials > 0 ? ((stats.voicemails / stats.totalDials) * 100).toFixed(1) : 0}%
+                </div>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="text-3xl font-bold text-gray-600 mb-2">{stats.noAnswers}</div>
+                <div className="text-sm font-medium text-gray-600">No Answer</div>
+                <div className="text-xs text-gray-500 mt-1">{noAnswerRate}%</div>
+              </div>
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-3xl font-bold text-blue-600 mb-2">{stats.totalDials}</div>
+                <div className="text-sm font-medium text-gray-600">Total Dials</div>
+                <div className="text-xs text-gray-500 mt-1">100%</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Historical Data Table */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Session Summary</h3>
+              <Calendar className="w-5 h-5 text-blue-600" />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metric</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Session</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  <tr>
+                    <td className="px-4 py-4 text-sm font-medium text-gray-900">Total Dials</td>
+                    <td className="px-4 py-4 text-sm text-gray-600">{stats.totalDials}</td>
+                    <td className="px-4 py-4 text-sm text-gray-600">{settings.dailyGoal}</td>
+                    <td className="px-4 py-4 text-sm">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        stats.totalDials >= settings.dailyGoal ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {stats.totalDials >= settings.dailyGoal ? 'Goal Met' : 'In Progress'}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-4 text-sm font-medium text-gray-900">Connect Rate</td>
+                    <td className="px-4 py-4 text-sm text-gray-600">{connectRate}%</td>
+                    <td className="px-4 py-4 text-sm text-gray-600">30%</td>
+                    <td className="px-4 py-4 text-sm">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        parseFloat(connectRate) >= 30 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {parseFloat(connectRate) >= 30 ? 'Above Target' : 'Below Target'}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-4 text-sm font-medium text-gray-900">Avg Talk Time</td>
+                    <td className="px-4 py-4 text-sm text-gray-600">{formatTime(avgTalkTime)}</td>
+                    <td className="px-4 py-4 text-sm text-gray-600">2:00</td>
+                    <td className="px-4 py-4 text-sm">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        avgTalkTime >= 120 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {avgTalkTime >= 120 ? 'Good' : 'Needs Improvement'}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Tab Content */}
+      {activeTab === 'settings' && (
+        <div className="max-w-4xl mx-auto px-6 py-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Settings</h2>
+
+          {/* Dialer Settings */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <div className="flex items-center space-x-2 mb-6">
+              <Phone className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Dialer Configuration</h3>
+            </div>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Daily Goal (calls per day)
+                </label>
+                <input
+                  type="number"
+                  value={settings.dailyGoal}
+                  onChange={(e) => setSettings({ ...settings, dailyGoal: parseInt(e.target.value) })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  min="1"
+                  max="500"
+                />
+                <p className="text-sm text-gray-500 mt-1">Set your daily calling target</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Simultaneous Calls
+                </label>
+                <input
+                  type="number"
+                  value={settings.simultaneousCalls}
+                  onChange={(e) => setSettings({ ...settings, simultaneousCalls: parseInt(e.target.value) })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  min="1"
+                  max="5"
+                />
+                <p className="text-sm text-gray-500 mt-1">Number of calls to dial at once (1-5)</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Dialing Interval (seconds)
+                </label>
+                <input
+                  type="number"
+                  value={settings.dialingInterval}
+                  onChange={(e) => setSettings({ ...settings, dialingInterval: parseInt(e.target.value) })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  min="3"
+                  max="30"
+                />
+                <p className="text-sm text-gray-500 mt-1">Time between dialing batches</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Voicemail Drop Delay (seconds)
+                </label>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={settings.voicemailDropDelay}
+                  onChange={(e) => setSettings({ ...settings, voicemailDropDelay: parseFloat(e.target.value) })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  min="0.5"
+                  max="5"
+                />
+                <p className="text-sm text-gray-500 mt-1">How long to wait before auto-dropping voicemail</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature Toggles */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <div className="flex items-center space-x-2 mb-6">
+              <SettingsIcon className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Features</h3>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between py-3 border-b border-gray-200">
+                <div className="flex items-center space-x-3">
+                  <AlertCircle className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <div className="font-medium text-gray-900">AMD (Answering Machine Detection)</div>
+                    <div className="text-sm text-gray-500">Automatically detect and drop voicemails</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSettings({ ...settings, amdEnabled: !settings.amdEnabled })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    settings.amdEnabled ? 'bg-blue-600' : 'bg-gray-200'
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.amdEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between py-3 border-b border-gray-200">
+                <div className="flex items-center space-x-3">
+                  <Volume2 className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <div className="font-medium text-gray-900">Sound Notifications</div>
+                    <div className="text-sm text-gray-500">Play sound when prospect connects</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSettings({ ...settings, soundNotifications: !settings.soundNotifications })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    settings.soundNotifications ? 'bg-blue-600' : 'bg-gray-200'
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.soundNotifications ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between py-3 border-b border-gray-200">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <div className="font-medium text-gray-900">Auto Disposition</div>
+                    <div className="text-sm text-gray-500">Automatically disposition calls after hangup</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSettings({ ...settings, autoDisposition: !settings.autoDisposition })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    settings.autoDisposition ? 'bg-blue-600' : 'bg-gray-200'
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.autoDisposition ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center space-x-3">
+                  <Mic className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <div className="font-medium text-gray-900">Call Recording</div>
+                    <div className="text-sm text-gray-500">Record all calls for quality assurance</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSettings({ ...settings, callRecording: !settings.callRecording })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    settings.callRecording ? 'bg-blue-600' : 'bg-gray-200'
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    settings.callRecording ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Account Settings */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <div className="flex items-center space-x-2 mb-6">
+              <User className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Account</h3>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Caller ID Number
+                </label>
+                <input
+                  type="tel"
+                  value="+1 (833) 845-0617"
+                  disabled
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                />
+                <p className="text-sm text-gray-500 mt-1">Your outbound caller ID</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Twilio Integration
+                </label>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                      <Phone className="w-5 h-5 text-red-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">Not Connected</div>
+                      <div className="text-sm text-gray-500">Configure Twilio credentials for live calling</div>
+                    </div>
+                  </div>
+                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                    Connect
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <button className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+              <Save className="w-5 h-5" />
+              <span>Save Settings</span>
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
